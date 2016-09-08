@@ -1,0 +1,129 @@
+在ubuntu上可以使用 sudo apt-get install git来安装；在windows下安装msysgit:   http://msysgit.github.io/
+安装完后要输入用户信息：
+git config --global user.email "email@example.com"
+git config --global user.name "Your Name"
+
+cd一个目录，使用git init将该目录变为git仓库（repository）,配置信息会保存在隐藏目录.git/下。注：所有的版本控制系统只能跟踪纯文本的变化。
+
+git add file 将文件加入即将提交队列
+git commit -m "sth changed" 提交入库
+git status 查看仓库状态
+git diff file 查看对file做了哪些修改
+git log 查看历史版本日志           可以使用git log --pretty=oneline来简化输出
+git reset --hard commit_id 版本回退至commit_id所表示的版本，commit_id通过git log命令查看
+在git中，HEAD表示当前版，HEAD^上一个版本，HEAD^^表示上上一个版本，HEAD~100表示上100个版本。
+
+git reflog 用户操作记录日志。
+git add其实就是将修改放到暂存区（stage），git commit将暂存区的内容提交到分支。git管理的是修改而不是文件。
+git diff HEAD -- readme.txt命令可以查看工作区和版本库里面最新版本的区别
+
+当你改乱了工作区某个文件的内容，想直接丢弃工作区的修改时，用命令git checkout -- file，其实就是用版本库里的版本替换工作区版本。
+当你不但改乱了工作区某个文件的内容，还添加到了暂存区时，想丢弃修改，分两步，第一步用命令git reset HEAD file将暂存区修改回退到工作区，然后git checkout -- file
+git rm file 删除版本库中的文件，之后还要commit才真正删除。
+
+
+
+
+远程仓库github:
+注册github帐号
+创建sshkey: ssh-keygen -t rsa -C "youremail@example.com"一路默认下去
+在github网站的Account settings中添加sshkey:  title随便填，Key中复制主目录下.ssh/id_rsa.pub中的内容。
+
+在github上创建一个repository（比如叫learngit），将本地仓库推送至该repository: 
+先cd该本地仓库
+然后 git remote add origin git@github.com:roykingz/learngit.git  (orign是大家通用的远程库的名字,也可以改成别的)
+最后git push -u origin master   (之后的该仓库推送不再需要-u选项)
+
+命令：git clone git@github.com:roykingz/gitskills.git可以将github的gitskills库克隆到本地。（该命令是基于ssh的，也可以使用基于http的命令：
+git clone https://github.com/michaelliao/gitskills.git,该命令速度慢且后续麻烦~）
+
+
+git checkout -b dev 创建并切换到dev分支,相当于两条命令：git branch dev（创建）和git checkout dev（切换）
+git branch查看当前分支。
+之后的各种提交都是在这个分支上进行的，不影响master分支。
+切换回master分支：git checkout master，如果想将dev分支的修改或提交添加到master分支，就需要合并分支：
+git merge dev 合并指定分支到当前分支，
+然后就可以删除dev分支：
+git branch -d dev
+
+加入两个分支都做过修改且都提交,那么合并时会产生冲突，要删除文档中的冲突标记后再合并。
+
+分支合并默认是以fast forward模式合并的，即将master直接指向dev分支的最新commit，若之后删除分支，则会丢失该分支的其他commit信息，可以使用--no-ff选项以非fast forward的模式来合并，这样会将dev分支上的完整commit链合并到master分支，这样即使删除dev也不会丢失commit信息。
+
+当dev分支的任务没做完不想提交，但又要去临时处理一个Bug时，可用git stash将工作区存储起来，此时用git status查看，会发现工作区clean
+git stash list查看以保存的工作区，git stash apply默认恢复最新加入list的工作现场，也可以为其制定恢复某个现场，如git stash apply stash@{2},然后用
+git stash drop从list中删除该现场。也可以用git stash pop一次完成上述两步，但不可以为pop指定某个现场。
+
+如果一个分支尚未被合并，那么删除该分支时会出错，此时可以使用强制删除：git branch -D feature-vulcan
+
+
+git remote 查看远程库，git remote -v查看远程库更详细的信息。
+git push origin dev 向远程库推送dev分支，origin是默认的远程库名。
+
+git checkout -b dev origin/dev 将远程的创建至本地
+假如有两人都对dev分支做了修改提交，A先push此分支到远程，B再push时会出错，此时应先将远程origin/dev和本地的dev建立链接：
+git branch --set-upstream dev origin/dev
+再将远程分支抓下来合并：
+git pull
+此时合并可能会有冲突，要手动解jue
+
+
+多人协作的工作模式通常是这样：
+
+    首先，可以试图用git push origin branch-name推送自己的修改；
+
+    如果推送失败，则因为远程分支比你的本地更新，需要先用git pull试图合并；
+
+    如果合并有冲突，则解决冲突，并在本地提交；
+
+    没有冲突或者解决掉冲突后，再用git push origin branch-name推送就能成功！
+
+如果git pull提示“no tracking information”，则说明本地分支和远程分支的链接关系没有创建，用命令git branch --set-upstream branch-name origin/branch-name。
+
+git tag <name>为当前分支的最新commit版本加标签，如果想为之前的版本打标签，须指明commit id: git tag v0.9 commit_id
+git show <tagname>查看该标签的信息
+还可以创建带有说明的标签，用-a指定标签名，-m指定说明文字：git tag -a v0.1 -m "version 0.1 released" 3628164
+git tag -d v1.0删除标签
+git push origin v1.0推送某标签到远程
+git push origin --tags一次性推送全部尚未推送到远程的本地标签
+
+要删除远程标签则要先删除本地标签： git tag -d v1.0,再删除远程标签：git push origin :refs/tags/v1.0
+
+在git工作区根目录下创建一个.gitignore文件，并将某些文件的名字或相应的格式写进去，那么commit时会忽略这些文件。在https://github.com/github/gitignore上有各种开发语言对应的.gitignore文件模板。
+创建了.gitignore文件后要commit才会生效。
+
+
+可以为一个字符串配置一个别名，这通常用于命令太长，我们可以配置一个短一点的别名
+git config --global alias.st status 为status配置别名st,以后git st 就等效与git status。--global选项表明该别名对本机的所有仓库都生效，如果没有--global选项则仅对当前仓库生效。
+如果要取消这些别名设置，需要删除配置文件中[alias]下对应的别名，全局配置文件是主目录下的隐藏文件.gitconfig，仓库的配置文件是.git/config
+
+搭建一个git服务器步骤（假设服务器运行ubuntu系统）：
+第一步，安装git：
+sudo apt-get install git
+第二步，创建一个git用户，用来运行git服务：
+sudo adduser git
+第三步，创建证书登录：
+收集所有需要登录的用户的公钥，就是他们自己的id_rsa.pub文件，把所有公钥导入到/home/git/.ssh/authorized_keys文件里，一行一个。
+第四步，初始化Git仓库：
+先选定一个目录作为Git仓库，假定是/srv/sample.git，在/srv目录下输入命令：
+sudo git init --bare sample.git
+sudo chown -R git:git sample.git
+第五步，禁用shell登录：
+出于安全考虑，第二步创建的git用户不允许登录shell，这可以通过编辑/etc/passwd文件完成。找到类似下面的一行：
+git:x:1001:1001:,,,:/home/git:/bin/bash
+改为：
+git:x:1001:1001:,,,:/home/git:/usr/bin/git-shell
+第六步，克隆远程仓库：
+现在，可以通过git clone命令克隆远程仓库了，在各自的电脑上运行：
+git clone git@server:/srv/sample.git
+
+
+
+
+
+
+
+
+
+
+

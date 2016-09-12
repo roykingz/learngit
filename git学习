@@ -6,10 +6,11 @@ git config --global user.name "Your Name"
 cd一个目录，使用git init将该目录变为git仓库（repository）,配置信息会保存在隐藏目录.git/下。注：所有的版本控制系统只能跟踪纯文本的变化。
 
 git add file 将文件加入即将提交队列
-git commit -m "sth changed" 提交入库
+git commit -m "sth changed" 提交入库，git commit -a -m 'sth',其中-a选项是跳过add步骤，直接从工作区提交到仓库。
 git status 查看仓库状态
 git diff file 查看对file做了哪些修改
-git log 查看历史版本日志           可以使用git log --pretty=oneline来简化输出
+git diff 默认查看工作区与暂存区的区别，git diff --cached 查看暂存区和上一次提交版本的区别。
+git log 查看历史版本日志           可以使用git log --pretty=oneline来简化输出，-p可以显示每次提交的差异，-2可以只显示最近2次提交，--stat 仅显示简要的增改行数统计。--pretty可以取很多值，其中--pretty=format可以定制格式，便于编程分析。 git log选项很多，都很有用。
 git reset --hard commit_id 版本回退至commit_id所表示的版本，commit_id通过git log命令查看
 在git中，HEAD表示当前版，HEAD^上一个版本，HEAD^^表示上上一个版本，HEAD~100表示上100个版本。
 
@@ -19,8 +20,11 @@ git diff HEAD -- readme.txt命令可以查看工作区和版本库里面最新�
 
 当你改乱了工作区某个文件的内容，想直接丢弃工作区的修改时，用命令git checkout -- file，其实就是用版本库里的版本替换工作区版本。
 当你不但改乱了工作区某个文件的内容，还添加到了暂存区时，想丢弃修改，分两步，第一步用命令git reset HEAD file将暂存区修改回退到工作区，然后git checkout -- file
-git rm file 删除版本库中的文件，之后还要commit才真正删除。
-
+git rm file 删除暂存区以及工作区中的file，之后还要commit才真正删除。
+git mv README.txt README等价于三条命令：
+$ mv README.txt README
+$ git rm README.txt
+$ git add README
 
 
 

@@ -35,12 +35,28 @@ $ git add README
 
 在github上创建一个repository（比如叫learngit），将本地仓库推送至该repository: 
 先cd该本地仓库
-然后 git remote add origin git@github.com:roykingz/learngit.git  (orign是大家通用的远程库的名字,也可以改成别的)，若一个目录下有多个
+然后 git remote add origin git@github.com:roykingz/learngit.git  (给远程仓库起了个名字origin，通常远程仓库默认使用该名字)。一个本地仓库可以add到多个远程仓库中，但是起的名字不能相同，比如git remote add pb git://github.com/paulboone/ticgit.git
+从某个远程仓库获取本地没有的信息：git fetch pb（git fetch只拉取数据，但不自动合并到当前分支）
+git pull不仅拉取远程仓库数据，还自动合并到当前分支。
 最后git push -u origin master   (之后的该仓库推送不再需要-u选项)
+git remote 查看远程库，git remote -v查看远程库更详细的信息。
 
 命令：git clone git@github.com:roykingz/gitskills.git可以将github的gitskills库克隆到本地。（该命令是基于ssh的，也可以使用基于http的命令：
 git clone https://github.com/michaelliao/gitskills.git,该命令速度慢且后续麻烦~）
+git clone本质就是在本地自动创建master分支跟踪远程的master分支。
+git push origin master 向远程库推送master分支。只有别人没改动过远程仓库，推送才会成功。
 
+git remote rename pb paul 更改远程仓库名为paul
+git remote rm paul 移除远程仓库
+
+git tag <name>为当前分支的最新commit版本加标签，如果想为之前的版本打标签，须指明commit id: git tag v0.9 commit_id
+git show <tagname>查看该标签的信息
+还可以创建带有说明的标签，用-a指定标签名，-m指定说明文字：git tag -a v0.1 -m "version 0.1 released" 3628164
+git tag -d v1.0删除标签
+git push origin v1.0推送某标签到远程
+git push origin --tags一次性推送全部尚未推送到远程的本地标签
+
+要删除远程标签则要先删除本地标签： git tag -d v1.0,再删除远程标签：git push origin :refs/tags/v1.0
 
 git checkout -b dev 创建并切换到dev分支,相当于两条命令：git branch dev（创建）和git checkout dev（切换）
 git branch查看当前分支。
@@ -61,8 +77,7 @@ git stash drop从list中删除该现场。也可以用git stash pop一次完成�
 如果一个分支尚未被合并，那么删除该分支时会出错，此时可以使用强制删除：git branch -D feature-vulcan
 
 
-git remote 查看远程库，git remote -v查看远程库更详细的信息。
-git push origin dev 向远程库推送dev分支，origin是默认的远程库名。
+
 
 git checkout -b dev origin/dev 将远程的创建至本地
 假如有两人都对dev分支做了修改提交，A先push此分支到远程，B再push时会出错，此时应先将远程origin/dev和本地的dev建立链接：
@@ -84,14 +99,7 @@ git pull
 
 如果git pull提示“no tracking information”，则说明本地分支和远程分支的链接关系没有创建，用命令git branch --set-upstream branch-name origin/branch-name。
 
-git tag <name>为当前分支的最新commit版本加标签，如果想为之前的版本打标签，须指明commit id: git tag v0.9 commit_id
-git show <tagname>查看该标签的信息
-还可以创建带有说明的标签，用-a指定标签名，-m指定说明文字：git tag -a v0.1 -m "version 0.1 released" 3628164
-git tag -d v1.0删除标签
-git push origin v1.0推送某标签到远程
-git push origin --tags一次性推送全部尚未推送到远程的本地标签
 
-要删除远程标签则要先删除本地标签： git tag -d v1.0,再删除远程标签：git push origin :refs/tags/v1.0
 
 在git工作区根目录下创建一个.gitignore文件，并将某些文件的名字或相应的格式写进去，那么commit时会忽略这些文件。在https://github.com/github/gitignore上有各种开发语言对应的.gitignore文件模板。
 创建了.gitignore文件后要commit才会生效。

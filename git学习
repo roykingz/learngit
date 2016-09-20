@@ -9,16 +9,16 @@ git add file 将文件加入即将提交队列
 git commit -m "sth changed" 提交入库，git commit -a -m 'sth',其中-a选项是跳过add步骤，直接从工作区提交到仓库。
 git status 查看仓库状态
 git diff file 查看对file做了哪些修改
-git diff 默认查看工作区与暂存区的区别，git diff --cached 查看暂存区和上一次提交版本的区别。
-git log 查看历史版本日志           可以使用git log --pretty=oneline来简化输出，-p可以显示每次提交的差异，-2可以只显示最近2次提交，--stat 仅显示简要的增改行数统计。--pretty可以取很多值，其中--pretty=format可以定制格式，便于编程分析。 git log选项很多，都很有用。
-git reset --hard commit_id 版本回退至commit_id所表示的版本，commit_id通过git log命令查看
-在git中，HEAD表示当前版，HEAD^上一个版本，HEAD^^表示上上一个版本，HEAD~100表示上100个版本。
+git diff 默认查看工作区与暂存区的区别，git diff --cached 查看暂存区和当前commit的区别。
+git log 查看历史commit日志           可以使用git log --pretty=oneline来简化输出，-p可以显示每次提交的差异，-2可以只显示最近2次提交，--stat 仅显示简要的增改行数统计。--pretty可以取很多值，其中--pretty=format可以定制格式，便于编程分析。 git log选项很多，都很有用。
+git reset --hard commit_id 版本回退至commit_id所表示commit，commit_id通过git log命令查看
+在git中，HEAD指向当前commit，HEAD^指向上一个commit，HEAD^^指向上上一个版本，HEAD~100指向上100个版本。
 
 git reflog 用户操作记录日志。
 git add其实就是将修改放到暂存区（stage），git commit将暂存区的内容提交到分支。git管理的是修改而不是文件。
-git diff HEAD -- readme.txt命令可以查看工作区和版本库里面最新版本的区别
+git diff HEAD -- readme.txt命令可以查看工作区和版本库里面最新commit的区别
 
-当你改乱了工作区某个文件的内容，想直接丢弃工作区的修改时，用命令git checkout -- file，其实就是用版本库里的版本替换工作区版本。
+当你改乱了工作区某个文件的内容，想直接丢弃工作区的修改时，用命令git checkout -- file，其实就是用版本库里的commit替换工作区版本。
 当你不但改乱了工作区某个文件的内容，还添加到了暂存区时，想丢弃修改，分两步，第一步用命令git reset HEAD file将暂存区修改回退到工作区，然后git checkout -- file
 git rm file 删除暂存区以及工作区中的file，之后还要commit才真正删除。
 git mv README.txt README等价于三条命令：
@@ -49,7 +49,7 @@ git push origin master 向远程库推送master分支。只有别人没改动过
 git remote rename pb paul 更改远程仓库名为paul
 git remote rm paul 移除远程仓库
 
-git tag <name>为当前分支的最新commit版本加标签，如果想为之前的版本打标签，须指明commit id: git tag v0.9 commit_id
+git tag <name>为当前分支的最新commit加标签，如果想为之前的commit打标签，须指明commit id: git tag v0.9 commit_id
 git show <tagname>查看该标签的信息
 还可以创建带有说明的标签，用-a指定标签名，-m指定说明文字：git tag -a v0.1 -m "version 0.1 released" 3628164
 git tag -d v1.0删除标签
@@ -58,15 +58,23 @@ git push origin --tags一次性推送全部尚未推送到远程的本地标签
 
 要删除远程标签则要先删除本地标签： git tag -d v1.0,再删除远程标签：git push origin :refs/tags/v1.0
 
+每次Git commit，就会创建一个commit object，其中包含一个树指针（指向仓库所在目录），作者及相关信息，0个或多个指向祖先对象（也就是之前的commit object）的指针
+Git分支本质上仅仅是个指向 commit object的可变指针
+
+git branch test 创建test分支（并不切换），也就是在当前的commit object上创建了一个指针
+创建了分支后，就产生了一个分叉，test和master之后各自的提交各走各路互不影响，
+HEAD指针就指向当前工作分支
+git checkout test 切换到test分支，该命令做了两件事：改变HEAD指向test分支，将工作目录中的文件替换为test分支里最新的commit
 git checkout -b dev 创建并切换到dev分支,相当于两条命令：git branch dev（创建）和git checkout dev（切换）
 git branch查看当前分支。
 之后的各种提交都是在这个分支上进行的，不影响master分支。
+git branch -d dev 删除dev分支
 切换回master分支：git checkout master，如果想将dev分支的修改或提交添加到master分支，就需要合并分支：
 git merge dev 合并指定分支到当前分支，
-然后就可以删除dev分支：
-git branch -d dev
-
-加入两个分支都做过修改且都提交,那么合并时会产生冲突，要删除文档中的冲突标记后再合并。
+若master分支是dev分支的直接上游，那么可以Fast forward，也就是指针直接下移到dev的最新commit上即可，
+若合并的两个分支都做过修改且都提交,那么git会对比两个分支各自最新的commit和两个分支的共同祖先commit，根据对比结果：
+1.若修改的是不同文件或者是相同文件的不同部分，那么git会将所有这些修改合并到一起，然后创建一个新的commit object，然后将HEAD指向该commit；
+2.若修改了相同文件的相同部分，那么merge失败，可以使用git status查看失败状态，而且merge失败时，git会在该文件冲突的部分使用标记来显示出来，你需要手动编辑该文件，然后再git add和git commit（其实merge失败后，你也可以不理会冲突，直接add+commit）
 
 分支合并默认是以fast forward模式合并的，即将master直接指向dev分支的最新commit，若之后删除分支，则会丢失该分支的其他commit信息，可以使用--no-ff选项以非fast forward的模式来合并，这样会将dev分支上的完整commit链合并到master分支，这样即使删除dev也不会丢失commit信息。
 

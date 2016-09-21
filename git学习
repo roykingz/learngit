@@ -94,13 +94,18 @@ git checkout --track origin/devx效果类似上述命令，也是建立本地dev
 git branch -vv查看远程分支与本地跟踪分支的对应关系
 删除远程分支git push origin :devx  该命令的意思就是将空推送到远程devx，也就是删除了，或者使用git push origin --delete devx也可以删除远程分支devx
 
+衍合rebase
+除了merge，衍合也可以将一个分支整合到另一个分支
+假如有两个分支master和experiment，二者都有各自新的commit（也就是有分叉），要将experiment整合到master上，可以这样：
+git checkout experiment
+git rebase master
+git checkout master
+git merge experiment
+rebase原理：https://git-scm.com/book/en/v2/Git-Branching-Rebasing
+大抵就是：现将当前分支experiment独有的每个新commit跟两分支祖先commit对比，提取出每个diff保存在临时文件，然后依次将这些diffs应用到你想要整合到的master分支的当前commit上，这样就在master生成了几个新的commit，且experiment会指向最新生成的commit
+也就是说二者成了一条线上的两个分支，没有了分叉，这时执行merge，只需要fast forward。
+rebase和merge达到的最终合并效果是一样的，但使用衍合可以使得commit历史更加清晰。
 
-git checkout -b dev origin/dev 将远程的创建至本地
-假如有两人都对dev分支做了修改提交，A先push此分支到远程，B再push时会出错，此时应先将远程origin/dev和本地的dev建立链接：
-git branch --set-upstream dev origin/dev
-再将远程分支抓下来合并：
-git pull
-此时合并可能会有冲突，要手动解决
 
 多人协作的工作模式通常是这样：
 

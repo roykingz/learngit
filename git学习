@@ -72,19 +72,27 @@ git branch -d dev 删除dev分支
 切换回master分支：git checkout master，如果想将dev分支的修改或提交添加到master分支，就需要合并分支：
 git merge dev 合并指定分支到当前分支，
 若master分支是dev分支的直接上游，那么可以Fast forward，也就是指针直接下移到dev的最新commit上即可，
-若合并的两个分支都做过修改且都提交,那么git会对比两个分支各自最新的commit和两个分支的共同祖先commit，根据对比结果：
+若合并的两个分支都做过修改且都提交,那么git会对比两个分支各自最新的commit和两个分支的共同祖先commit，也就是三方合并，根据对比结果：
 1.若修改的是不同文件或者是相同文件的不同部分，那么git会将所有这些修改合并到一起，然后创建一个新的commit object，然后将HEAD指向该commit；
 2.若修改了相同文件的相同部分，那么merge失败，可以使用git status查看失败状态，而且merge失败时，git会在该文件冲突的部分使用标记来显示出来，你需要手动编辑该文件，然后再git add和git commit（其实merge失败后，你也可以不理会冲突，直接add+commit）
-
 分支合并默认是以fast forward模式合并的，即将master直接指向dev分支的最新commit，若之后删除分支，则会丢失该分支的其他commit信息，可以使用--no-ff选项以非fast forward的模式来合并，这样会将dev分支上的完整commit链合并到master分支，这样即使删除dev也不会丢失commit信息。
-
-当dev分支的任务没做完不想提交，但又要去临时处理一个Bug时，可用git stash将工作区存储起来，此时用git status查看，会发现工作区clean
-git stash list查看以保存的工作区，git stash apply默认恢复最新加入list的工作现场，也可以为其制定恢复某个现场，如git stash apply stash@{2},然后用
-git stash drop从list中删除该现场。也可以用git stash pop一次完成上述两步，但不可以为pop指定某个现场。
-
+git branch --merged 查看已合并到当前分支的分支，--no-merged查看未合并到当前分支的分支
 如果一个分支尚未被合并，那么删除该分支时会出错，此时可以使用强制删除：git branch -D feature-vulcan
 
-
+远程分支
+git clone时会在本地创建一个master分支，并创建一个origin/master指针，执行远程仓库master的当前commit
+其他人向远程仓库的master分支推送后，会导致你本地的origin/master指针与远程的master分支的当前commit不一致，此时可用git fetch origin从远程取到你没有的commit，但不会跟你本地的master分支合并，这相当于fetch之后你有了两条分支：master和origin/master
+git pull不仅拉取数据，还会和本地的分支合并。
+git push origin dev:dev123  将本地分支dev推送到远程仓库，但分支名改为dev123
+若远程仓库使用的是HTTP URL，那么每此push时都会要求输入账号密码，可以使用git config --global credential.helper cache，短时间内不再要求输入账号密码
+当别人将他独有的分支（如devx）推送到远程仓库后，下次你再fetch时只会取到该分支的远程指针origin/devx，而不是该分支的副本，也就是说你再本地无法编辑该分支devx。
+但是你可以将该远程分支merge到你的本地分支：git merge origin/devx
+也可以在origin/devx分支的基础上新建本地分支：git checkout -b devx origin/devx，（也可以取不同的名字）这样本地devx就和远程分支建立的联系，之后的push，pull操作，git会自动判断向远程的哪个分支推送或拉取数据。
+git checkout --track origin/devx效果类似上述命令，也是建立本地devx分支并跟踪origin/devx
+其实git clone时就自动执行了远程与本地master分支的关联操作。
+若想用已有的本地分支来跟踪刚拉下来的远程分支，可以先checkout该分支，然后git branch -u origin/devx
+git branch -vv查看远程分支与本地跟踪分支的对应关系
+删除远程分支git push origin :devx  该命令的意思就是将空推送到远程devx，也就是删除了，或者使用git push origin --delete devx也可以删除远程分支devx
 
 
 git checkout -b dev origin/dev 将远程的创建至本地
@@ -92,21 +100,19 @@ git checkout -b dev origin/dev 将远程的创建至本地
 git branch --set-upstream dev origin/dev
 再将远程分支抓下来合并：
 git pull
-此时合并可能会有冲突，要手动解jue
-
+此时合并可能会有冲突，要手动解决
 
 多人协作的工作模式通常是这样：
 
     首先，可以试图用git push origin branch-name推送自己的修改；
-
     如果推送失败，则因为远程分支比你的本地更新，需要先用git pull试图合并；
-
     如果合并有冲突，则解决冲突，并在本地提交；
-
     没有冲突或者解决掉冲突后，再用git push origin branch-name推送就能成功！
-
 如果git pull提示“no tracking information”，则说明本地分支和远程分支的链接关系没有创建，用命令git branch --set-upstream branch-name origin/branch-name。
 
+当dev分支的任务没做完不想提交，但又要去临时处理一个Bug时，可用git stash将工作区存储起来，此时用git status查看，会发现工作区clean
+git stash list查看以保存的工作区，git stash apply默认恢复最新加入list的工作现场，也可以为其制定恢复某个现场，如git stash apply stash@{2},然后用
+git stash drop从list中删除该现场。也可以用git stash pop一次完成上述两步，但不可以为pop指定某个现场。
 
 
 在git工作区根目录下创建一个.gitignore文件，并将某些文件的名字或相应的格式写进去，那么commit时会忽略这些文件。在https://github.com/github/gitignore上有各种开发语言对应的.gitignore文件模板。

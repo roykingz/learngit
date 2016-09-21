@@ -105,7 +105,7 @@ rebase原理：https://git-scm.com/book/en/v2/Git-Branching-Rebasing
 大抵就是：现将当前分支experiment独有的每个新commit跟两分支祖先commit对比，提取出每个diff保存在临时文件，然后依次将这些diffs应用到你想要整合到的master分支的当前commit上，这样就在master生成了几个新的commit，且experiment会指向最新生成的commit
 也就是说二者成了一条线上的两个分支，没有了分叉，这时执行merge，只需要fast forward。
 rebase和merge达到的最终合并效果是一样的，但使用衍合可以使得commit历史更加清晰。
-
+衍合的风险：永远不要衍合那些已经推送到公共仓库的更新。因为在衍合的时候，实际上抛弃了一些现存的 commit 而创造了一些类似但不同的新 commit。
 
 多人协作的工作模式通常是这样：
 

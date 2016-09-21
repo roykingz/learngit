@@ -1,4 +1,1 @@
-git is a distributed version control system
-git is a free software distributed under the GPL
-git git git 
-git track changes of files
+GIT学习过程记录

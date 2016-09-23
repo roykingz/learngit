@@ -1,7 +1,7 @@
 在ubuntu上可以使用 sudo apt-get install git来安装；在windows下安装msysgit:   http://msysgit.github.io/
 安装完后要输入用户信息：
-git config --global user.email "email@example.com"
-git config --global user.name "Your Name"
+git config --global user.email "rczhang@sysnew.com"
+git config --global user.name "rczhang"
 
 cd一个目录，使用git init将该目录变为git仓库（repository）,配置信息会保存在隐藏目录.git/下。注：所有的版本控制系统只能跟踪纯文本的变化。
 
